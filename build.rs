@@ -1,9 +1,11 @@
 extern crate bindgen;
 extern crate pkg_config;
 
-use std::{env, process};
+use std::{env, fs, path, process};
 
 fn main() {
+    let out_path = path::PathBuf::from(env::var_os("OUT_DIR").unwrap());
+
     let include_paths = match pkg_config::Config::new().probe("astc-encoder") {
         Ok(astcenc) => {
             for path in astcenc.link_paths {
@@ -31,10 +33,21 @@ fn main() {
                 .wait()
                 .unwrap();
 
-            println!("cargo:rustc-link-search=native={}", dst);
-            println!("cargo:rustc-link-lib=dylib=astc-encoder-{}", vec);
+            let name = format!("astcenc-{}", vec);
 
-            vec!["astc-encoder/Source".to_string()]
+            println!("cargo:rustc-link-lib=dylib={}", name);
+
+            fs::rename(path::PathBuf::from(dst).join(&name), out_path.join(&name)).unwrap();
+
+            process::Command::new("make")
+                .arg("clean")
+                .current_dir(dst)
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap();
+
+            vec![dst.to_string()]
         }
     };
 
@@ -63,7 +76,6 @@ fn main() {
 
     let bindings = bindings.generate().expect("Unable to generate bindings");
 
-    let out_path = std::path::PathBuf::from(env::var_os("OUT_DIR").unwrap());
     let bindings_path = out_path.join("bindings.rs");
     bindings
         .write_to_file(&bindings_path)
