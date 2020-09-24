@@ -32,7 +32,7 @@ fn main() {
                 .unwrap();
 
             println!("cargo:rustc-link-search=native={}", dst);
-            println!("cargo:rustc-link-lib=static=astc-encoder-{}", vec);
+            println!("cargo:rustc-link-lib=dylib=astc-encoder-{}", vec);
 
             vec!["astc-encoder/Source".to_string()]
         }
