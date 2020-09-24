@@ -3,6 +3,9 @@ name = "astcenc-sys"
 version = "0.1.0"
 authors = ["Jef <jackefransham@gmail.com>"]
 edition = "2018"
+homepage = "https://github.com/Vurich/astcenc-sys"
+repository = "https://github.com/Vurich/astcenc-sys"
+documentation = "https://docs.rs/astcenc-sys"
 description = "Low-level bindings to the official ARM ASTC encoding library (currently Linux-only due to use of GNU Make)"
 license = "Unlicense"
 
