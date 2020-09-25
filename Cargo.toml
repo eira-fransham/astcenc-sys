@@ -8,6 +8,7 @@ repository = "https://github.com/Vurich/astcenc-sys"
 documentation = "https://docs.rs/astcenc-sys"
 description = "Low-level bindings to the official ARM ASTC encoding library (currently Linux-only due to use of GNU Make)"
 license = "Unlicense"
+exclude = ["/astc-encoder/Docs", "/astc-encoder/jenkins", "/astc-encoder/Test"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
