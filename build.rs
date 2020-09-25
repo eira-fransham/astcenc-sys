@@ -28,7 +28,7 @@ fn main() {
                 .join("astc-encoder/Source");
 
             process::Command::new("make")
-                .env("CXXFLAGS", "-shared")
+                .env("CXXFLAGS", "-static")
                 .current_dir(&dst)
                 .spawn()
                 .unwrap()
@@ -37,18 +37,15 @@ fn main() {
 
             let name = format!("astcenc-{}", vec);
 
-            println!("cargo:rustc-link-path={}", out_path.to_str().unwrap());
-            println!("cargo:rustc-link-lib=dylib={}", name);
+            let mut out = out_path.join(&name);
+            out.set_extension("a");
+            let mut file_name = String::from("lib");
+            file_name.push_str(out.file_name().unwrap().to_str().unwrap());
+            out.set_file_name(file_name);
 
-            fs::rename(dst.join(&name), out_path.join(&name)).unwrap();
+            fs::copy(dst.join(&name), &out).unwrap();
 
-            process::Command::new("make")
-                .arg("clean")
-                .current_dir(&dst)
-                .spawn()
-                .unwrap()
-                .wait()
-                .unwrap();
+            println!("cargo:rustc-link-path={}", out.display());
 
             vec![dst.display().to_string()]
         }
