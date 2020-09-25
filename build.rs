@@ -24,10 +24,12 @@ fn main() {
         _ => {
             let vec = env::var("VEC").unwrap_or("avx2".to_string());
 
-            let dst = "astc-encoder/Source";
+            let dst = path::PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap())
+                .join("astc-encoder/Source");
 
             process::Command::new("make")
-                .current_dir(dst)
+                .env("CXXFLAGS", "-shared")
+                .current_dir(&dst)
                 .spawn()
                 .unwrap()
                 .wait()
@@ -35,19 +37,20 @@ fn main() {
 
             let name = format!("astcenc-{}", vec);
 
+            println!("cargo:rustc-link-path={}", out_path.to_str().unwrap());
             println!("cargo:rustc-link-lib=dylib={}", name);
 
-            fs::rename(path::PathBuf::from(dst).join(&name), out_path.join(&name)).unwrap();
+            fs::rename(dst.join(&name), out_path.join(&name)).unwrap();
 
             process::Command::new("make")
                 .arg("clean")
-                .current_dir(dst)
+                .current_dir(&dst)
                 .spawn()
                 .unwrap()
                 .wait()
                 .unwrap();
 
-            vec![dst.to_string()]
+            vec![dst.display().to_string()]
         }
     };
 
