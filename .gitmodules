@@ -1,3 +1,3 @@
 [submodule "astc-encoder"]
 	path = astc-encoder
-	url = git@github.com:ARM-software/astc-encoder.git
+	url = git@github.com:Vurich/astc-encoder.git
