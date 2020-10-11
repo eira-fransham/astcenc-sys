@@ -47,7 +47,7 @@ fn main() {
             file_name.push_str(out.file_name().unwrap().to_str().unwrap());
             out.set_file_name(file_name);
 
-            fs::rename(dbg!(out_path.join(&name)), dbg!(&out)).unwrap();
+            fs::rename(out_path.join(&name), &out).unwrap();
 
             println!("cargo:rustc-link-path={}", out.display());
 
