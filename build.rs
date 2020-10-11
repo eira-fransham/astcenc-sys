@@ -28,22 +28,26 @@ fn main() {
                 .join("astc-encoder/Source");
 
             process::Command::new("make")
-                .env("CXXFLAGS", "-static")
-                .current_dir(&dst)
+                .arg("library")
+                .env("CC", "clang")
+                .env("STATIC", "yes")
+                .env("CXXFLAGS", "-Wno-error=all -Wno-error=pedantic")
+                .env("VPATH", &dst)
+                .arg(format!("--file={}", dst.join("Makefile").display()))
+                .current_dir(&out_path)
                 .spawn()
                 .unwrap()
                 .wait()
                 .unwrap();
 
-            let name = format!("astcenc-{}", vec);
+            let name = format!("astcenc-{}.a", vec);
 
             let mut out = out_path.join(&name);
-            out.set_extension("a");
             let mut file_name = String::from("lib");
             file_name.push_str(out.file_name().unwrap().to_str().unwrap());
             out.set_file_name(file_name);
 
-            fs::copy(dst.join(&name), &out).unwrap();
+            fs::rename(dbg!(out_path.join(&name)), dbg!(&out)).unwrap();
 
             println!("cargo:rustc-link-path={}", out.display());
 
