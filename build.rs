@@ -22,13 +22,14 @@ fn main() {
                 .collect::<Vec<_>>()
         }
         _ => {
-            let vec = env::var("VEC").unwrap_or("avx2".to_string());
+            let vec = "avx2";
 
             let dst = path::PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap())
                 .join("astc-encoder/Source");
 
             process::Command::new("make")
                 .arg("library")
+                .env("VEC", vec)
                 .env("STATIC", "yes")
                 .env("CC", "clang")
                 .env("CXXFLAGS", "-Wno-error=all -Wno-error=pedantic")
