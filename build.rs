@@ -1,7 +1,7 @@
 extern crate bindgen;
 extern crate pkg_config;
 
-use std::{env, fs, path, process};
+use std::{env, path, process};
 
 fn main() {
     let out_path = path::PathBuf::from(env::var_os("OUT_DIR").unwrap());
@@ -29,8 +29,8 @@ fn main() {
 
             process::Command::new("make")
                 .arg("library")
-                .env("CC", "clang")
                 .env("STATIC", "yes")
+                .env("CC", "clang")
                 .env("CXXFLAGS", "-Wno-error=all -Wno-error=pedantic")
                 .env("VPATH", &dst)
                 .arg(format!("--file={}", dst.join("Makefile").display()))
@@ -40,16 +40,8 @@ fn main() {
                 .wait()
                 .unwrap();
 
-            let name = format!("astcenc-{}.a", vec);
-
-            let mut out = out_path.join(&name);
-            let mut file_name = String::from("lib");
-            file_name.push_str(out.file_name().unwrap().to_str().unwrap());
-            out.set_file_name(file_name);
-
-            fs::rename(out_path.join(&name), &out).unwrap();
-
-            println!("cargo:rustc-link-path={}", out.display());
+            println!("cargo:rustc-link-lib=astcenc-{}", vec);
+            println!("cargo:rustc-link-search={}", out_path.display());
 
             vec![dst.display().to_string()]
         }
