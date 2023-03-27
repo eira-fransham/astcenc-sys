@@ -22,29 +22,19 @@ fn main() {
                 .collect::<Vec<_>>()
         }
         _ => {
-            let vec = "avx2";
+            let source_root = path::PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap())
+                .join("astc-encoder");
 
-            let dst = path::PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap())
-                .join("astc-encoder/Source");
+            let dst_root = cmake::build(&source_root);
 
-            process::Command::new("make")
-                .arg("library")
-                .env("VEC", vec)
-                .env("STATIC", "yes")
-                .env("CC", "clang")
-                .env("CXXFLAGS", "-Wno-error=all -Wno-error=pedantic")
-                .env("VPATH", &dst)
-                .arg(format!("--file={}", dst.join("Makefile").display()))
-                .current_dir(&out_path)
-                .spawn()
-                .unwrap()
-                .wait()
-                .unwrap();
+            println!("cargo:rustc-link-lib=astcenc-native-static");
+            println!(
+                "cargo:rustc-link-search={}",
+                dst_root.join("build").join("Source").display()
+            );
+            dbg!(source_root.display(), dst_root.display());
 
-            println!("cargo:rustc-link-lib=astcenc-{}", vec);
-            println!("cargo:rustc-link-search={}", out_path.display());
-
-            vec![dst.display().to_string()]
+            vec![source_root.join("Source").display().to_string()]
         }
     };
 
