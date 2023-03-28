@@ -32,7 +32,6 @@ fn main() {
                 "cargo:rustc-link-search={}",
                 dst_root.join("build").join("Source").display()
             );
-            dbg!(source_root.display(), dst_root.display());
 
             vec![source_root.join("Source").display().to_string()]
         }
