@@ -49,7 +49,8 @@ fn main() {
         .derive_partialeq(true)
         .derive_eq(true)
         .derive_hash(true)
-        .derive_debug(true);
+        .derive_debug(true)
+        .blocklist_item("std::value");
 
     for path in include_paths {
         bindings = bindings.clang_args(&["-F", &path]);
