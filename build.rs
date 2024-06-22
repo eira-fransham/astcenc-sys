@@ -1,7 +1,4 @@
-extern crate bindgen;
-extern crate pkg_config;
-
-use std::{env, path, process};
+use std::{env, path};
 
 fn main() {
     let out_path = path::PathBuf::from(env::var_os("OUT_DIR").unwrap());
@@ -45,12 +42,10 @@ fn main() {
         println!("cargo:rustc-link-lib=c++");
     }
 
-    println!("cargo:rerun-if-changed=wrapper.h");
-
     let mut bindings = bindgen::Builder::default()
         .clang_arg("-xc++")
         .header("wrapper.h")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .derive_partialeq(true)
         .derive_eq(true)
         .derive_hash(true)
@@ -64,7 +59,7 @@ fn main() {
 
     let bindings_path = out_path.join("bindings.rs");
     bindings
-        .write_to_file(&bindings_path)
+        .write_to_file(bindings_path)
         .expect("Couldn't write bindings");
 
     println!("cargo:rerun-if-changed=build.rs");
