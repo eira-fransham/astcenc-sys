@@ -50,6 +50,7 @@ fn main() {
         .derive_eq(true)
         .derive_hash(true)
         .derive_debug(true)
+        // Bypasses an issue with bindgen that makes it generate invalid Rust code.
         .blocklist_item("std::value");
 
     for path in include_paths {
