@@ -24,7 +24,10 @@ fn main() {
 
             let dst_root = cmake::build(&source_root);
 
-            println!("cargo:rustc-link-lib=astcenc-native-static");
+            // The `sse4.1` library targets x86_64, while the `neon` library targets arm64.
+            // Rather than doing an error-prone target detection, we simply link to both.
+            println!("cargo:rustc-link-lib=astcenc-sse4.1-static");
+            println!("cargo:rustc-link-lib=astcenc-neon-static");
             println!(
                 "cargo:rustc-link-search={}",
                 dst_root.join("build").join("Source").display()
