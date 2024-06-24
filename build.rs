@@ -22,12 +22,13 @@ fn main() {
             let source_root = path::PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap())
                 .join("astc-encoder");
 
-            let dst_root = cmake::build(&source_root);
+            // See <https://github.com/ARM-software/astc-encoder/blob/main/CMakeLists.txt>.
+            let dst_root = cmake::Config::new(&source_root)
+                .define("ASTCENC_UNIVERSAL_BUILD", "0")
+                .define("ASTCENC_ISA_NATIVE", "1")
+                .build();
 
-            // The `sse4.1` library targets x86_64, while the `neon` library targets arm64.
-            // Rather than doing an error-prone target detection, we simply link to both.
-            println!("cargo:rustc-link-lib=astcenc-sse4.1-static");
-            println!("cargo:rustc-link-lib=astcenc-neon-static");
+            println!("cargo:rustc-link-lib=astcenc-native-static");
             println!(
                 "cargo:rustc-link-search={}",
                 dst_root.join("build").join("Source").display()
