@@ -26,6 +26,11 @@ fn main() {
             let dst_root = cmake::Config::new(&source_root)
                 .define("ASTCENC_UNIVERSAL_BUILD", "OFF")
                 .define("ASTCENC_ISA_NATIVE", "ON")
+                .static_crt(
+                    env::var("CARGO_CFG_TARGET_FEATURE")
+                        .unwrap_or_default()
+                        .contains("crt-static"),
+                )
                 .build();
 
             println!("cargo:rustc-link-lib=astcenc-native-static");
