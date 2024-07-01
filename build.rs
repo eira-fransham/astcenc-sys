@@ -24,8 +24,8 @@ fn main() {
 
             // See <https://github.com/ARM-software/astc-encoder/blob/main/CMakeLists.txt>.
             let dst_root = cmake::Config::new(&source_root)
-                .define("ASTCENC_UNIVERSAL_BUILD", "0")
-                .define("ASTCENC_ISA_NATIVE", "1")
+                .define("ASTCENC_UNIVERSAL_BUILD", "OFF")
+                .define("ASTCENC_ISA_NATIVE", "ON")
                 .build();
 
             println!("cargo:rustc-link-lib=astcenc-native-static");
