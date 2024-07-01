@@ -29,9 +29,19 @@ fn main() {
                 .build();
 
             println!("cargo:rustc-link-lib=astcenc-native-static");
+            // Non-Windows.
             println!(
                 "cargo:rustc-link-search={}",
                 dst_root.join("build").join("Source").display()
+            );
+            // Windows.
+            println!(
+                "cargo:rustc-link-search={}",
+                dst_root
+                    .join("build")
+                    .join("Source")
+                    .join("Release")
+                    .display()
             );
 
             vec![source_root.join("Source").display().to_string()]
