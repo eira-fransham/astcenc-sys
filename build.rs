@@ -1,7 +1,4 @@
-extern crate bindgen;
-extern crate pkg_config;
-
-use std::{env, path, process};
+use std::{env, path};
 
 fn main() {
     let out_path = path::PathBuf::from(env::var_os("OUT_DIR").unwrap());
@@ -25,12 +22,26 @@ fn main() {
             let source_root = path::PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap())
                 .join("astc-encoder");
 
-            let dst_root = cmake::build(&source_root);
+            // See <https://github.com/ARM-software/astc-encoder/blob/main/CMakeLists.txt>.
+            let dst_root = cmake::Config::new(&source_root)
+                .define("ASTCENC_UNIVERSAL_BUILD", "OFF")
+                .define("ASTCENC_ISA_NATIVE", "ON")
+                .build();
 
             println!("cargo:rustc-link-lib=astcenc-native-static");
+            // Non-Windows.
             println!(
                 "cargo:rustc-link-search={}",
                 dst_root.join("build").join("Source").display()
+            );
+            // Windows.
+            println!(
+                "cargo:rustc-link-search={}",
+                dst_root
+                    .join("build")
+                    .join("Source")
+                    .join("Release")
+                    .display()
             );
 
             vec![source_root.join("Source").display().to_string()]
@@ -45,16 +56,16 @@ fn main() {
         println!("cargo:rustc-link-lib=c++");
     }
 
-    println!("cargo:rerun-if-changed=wrapper.h");
-
     let mut bindings = bindgen::Builder::default()
         .clang_arg("-xc++")
         .header("wrapper.h")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .derive_partialeq(true)
         .derive_eq(true)
         .derive_hash(true)
-        .derive_debug(true);
+        .derive_debug(true)
+        // Bypasses an issue with bindgen that makes it generate invalid Rust code.
+        .blocklist_item("std::value");
 
     for path in include_paths {
         bindings = bindings.clang_args(&["-F", &path]);
@@ -64,7 +75,7 @@ fn main() {
 
     let bindings_path = out_path.join("bindings.rs");
     bindings
-        .write_to_file(&bindings_path)
+        .write_to_file(bindings_path)
         .expect("Couldn't write bindings");
 
     println!("cargo:rerun-if-changed=build.rs");
