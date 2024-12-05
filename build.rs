@@ -64,6 +64,7 @@ fn main() {
         .derive_eq(true)
         .derive_hash(true)
         .derive_debug(true)
+        .formatter(bindgen::Formatter::Prettyplease)
         // Bypasses an issue with bindgen that makes it generate invalid Rust code.
         .blocklist_item("std::value");
 
