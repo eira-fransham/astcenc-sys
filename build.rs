@@ -74,7 +74,7 @@ fn main() {
 
     let bindings = bindings.generate().expect("Unable to generate bindings");
 
-    let bindings_path = out_path.join("bindings.rs");
+    let bindings_path = out_path.join("bindgen.rs");
     bindings
         .write_to_file(bindings_path)
         .expect("Couldn't write bindings");
