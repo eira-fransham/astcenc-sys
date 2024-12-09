@@ -18,5 +18,4 @@ exclude = ["/astc-encoder/Docs", "/astc-encoder/jenkins", "/astc-encoder/Test"]
 bindgen = { version = "0.70", default-features = false, features = [
     "prettyplease",
 ] }
-pkg-config = "0.3"
-cmake = "0.1.49"
+cc = "1.0"

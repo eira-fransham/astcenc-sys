@@ -1,64 +1,36 @@
-use std::{env, path};
-
 fn main() {
-    let out_path = path::PathBuf::from("src");
+    let mut build = cc::Build::new();
 
-    let include_paths = match pkg_config::Config::new().probe("astc-encoder") {
-        Ok(astcenc) => {
-            for path in astcenc.link_paths {
-                println!("cargo:rustc-link-path={}", path.to_str().unwrap());
-            }
-            for lib in astcenc.libs {
-                println!("cargo:rustc-link-lib={}", lib);
-            }
+    build.files([
+        "astc-encoder/Source/astcenc_averages_and_directions.cpp",
+        "astc-encoder/Source/astcenc_block_sizes.cpp",
+        "astc-encoder/Source/astcenc_color_quantize.cpp",
+        "astc-encoder/Source/astcenc_color_unquantize.cpp",
+        "astc-encoder/Source/astcenc_compress_symbolic.cpp",
+        "astc-encoder/Source/astcenc_compute_variance.cpp",
+        "astc-encoder/Source/astcenc_decompress_symbolic.cpp",
+        "astc-encoder/Source/astcenc_diagnostic_trace.cpp",
+        "astc-encoder/Source/astcenc_entry.cpp",
+        "astc-encoder/Source/astcenc_find_best_partitioning.cpp",
+        "astc-encoder/Source/astcenc_ideal_endpoints_and_weights.cpp",
+        "astc-encoder/Source/astcenc_image.cpp",
+        "astc-encoder/Source/astcenc_integer_sequence.cpp",
+        "astc-encoder/Source/astcenc_mathlib.cpp",
+        "astc-encoder/Source/astcenc_mathlib_softfloat.cpp",
+        "astc-encoder/Source/astcenc_partition_tables.cpp",
+        "astc-encoder/Source/astcenc_percentile_tables.cpp",
+        "astc-encoder/Source/astcenc_pick_best_endpoint_format.cpp",
+        "astc-encoder/Source/astcenc_quantization.cpp",
+        "astc-encoder/Source/astcenc_symbolic_physical.cpp",
+        "astc-encoder/Source/astcenc_weight_align.cpp",
+        "astc-encoder/Source/astcenc_weight_quant_xfer_tables.cpp",
+    ]);
 
-            astcenc
-                .include_paths
-                .into_iter()
-                .map(|p| p.into_os_string().into_string().unwrap())
-                .collect::<Vec<_>>()
-        }
-        _ => {
-            let source_root = path::PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap())
-                .join("astc-encoder");
-
-            // See <https://github.com/ARM-software/astc-encoder/blob/main/CMakeLists.txt>.
-            let dst_root = cmake::Config::new(&source_root)
-                .define("ASTCENC_UNIVERSAL_BUILD", "OFF")
-                .define("ASTCENC_ISA_NATIVE", "ON")
-                .build();
-
-            println!("cargo:rustc-link-lib=astcenc-native-static");
-            // Non-Windows.
-            println!(
-                "cargo:rustc-link-search={}",
-                dst_root.join("build").join("Source").display()
-            );
-            // Windows.
-            println!(
-                "cargo:rustc-link-search={}",
-                dst_root
-                    .join("build")
-                    .join("Source")
-                    .join("Release")
-                    .display()
-            );
-
-            vec![source_root.join("Source").display().to_string()]
-        }
-    };
-
-    // Link to libstdc++ on GNU
-    let target = env::var("TARGET").unwrap();
-    if target.contains("gnu") {
-        println!("cargo:rustc-link-lib=stdc++");
-    } else if target.contains("apple") {
-        println!("cargo:rustc-link-lib=c++");
-    }
+    build.compile("astcenc");
 
     let main_header = "astc-encoder/Source/astcenc.h";
 
-    let mut bindings = bindgen::Builder::default()
+    let bindings = bindgen::Builder::default()
         .clang_arg("-xc++")
         .header(main_header)
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
@@ -68,17 +40,12 @@ fn main() {
         .derive_debug(true)
         .formatter(bindgen::Formatter::Prettyplease)
         // Bypasses an issue with bindgen that makes it generate invalid Rust code.
-        .allowlist_file(main_header);
+        .allowlist_file(main_header)
+        .generate()
+        .expect("Unable to generate bindings");
 
-    for path in include_paths {
-        bindings = bindings.clang_args(&["-F", &path]);
-    }
-
-    let bindings = bindings.generate().expect("Unable to generate bindings");
-
-    let bindings_path = out_path.join("bindings.rs");
     bindings
-        .write_to_file(bindings_path)
+        .write_to_file("src/bindings.rs")
         .expect("Couldn't write bindings");
 
     println!("cargo:rerun-if-changed=build.rs");
