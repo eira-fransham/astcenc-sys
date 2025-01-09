@@ -30,7 +30,7 @@ fn main() {
         "astc-encoder/Source/astcenc_weight_quant_xfer_tables.cpp",
     ]);
 
-    build.compile("astcenc");
+    build.compile("astcenc-vendored");
 
     let main_header = "wrapper.h";
 
@@ -51,6 +51,14 @@ fn main() {
     bindings
         .write_to_file(bindings_path)
         .expect("Couldn't write bindings");
+
+    // Link to libstdc++ on GNU
+    let target = env::var("TARGET").unwrap();
+    if target.contains("gnu") {
+        println!("cargo:rustc-link-lib=stdc++");
+    } else if target.contains("apple") {
+        println!("cargo:rustc-link-lib=c++");
+    }
 
     println!("cargo:rerun-if-changed=build.rs");
 }
