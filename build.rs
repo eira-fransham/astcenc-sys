@@ -1,4 +1,8 @@
+use std::{env, path};
+
 fn main() {
+    let out_path = path::PathBuf::from(env::var_os("OUT_DIR").unwrap());
+
     let mut build = cc::Build::new();
 
     build.files([
@@ -44,8 +48,9 @@ fn main() {
         .generate()
         .expect("Unable to generate bindings");
 
+    let bindings_path = out_path.join("bindings.rs");
     bindings
-        .write_to_file("src/bindings.rs")
+        .write_to_file(bindings_path)
         .expect("Couldn't write bindings");
 
     println!("cargo:rerun-if-changed=build.rs");
