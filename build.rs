@@ -32,10 +32,11 @@ fn main() {
 
     build.compile("astcenc");
 
-    let main_header = "astc-encoder/Source/astcenc.h";
+    let main_header = "wrapper.h";
 
     let bindings = bindgen::Builder::default()
         .clang_arg("-xc++")
+        .clang_arg("-Iastc-encoder/Source")
         .header(main_header)
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .derive_partialeq(true)
@@ -44,7 +45,6 @@ fn main() {
         .derive_debug(true)
         .formatter(bindgen::Formatter::Prettyplease)
         // Bypasses an issue with bindgen that makes it generate invalid Rust code.
-        .allowlist_file(main_header)
         .generate()
         .expect("Unable to generate bindings");
 
