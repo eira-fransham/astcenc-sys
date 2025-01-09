@@ -44,7 +44,6 @@ fn main() {
         .derive_hash(true)
         .derive_debug(true)
         .formatter(bindgen::Formatter::Prettyplease)
-        // Bypasses an issue with bindgen that makes it generate invalid Rust code.
         .generate()
         .expect("Unable to generate bindings");
 
