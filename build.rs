@@ -46,7 +46,7 @@ fn main() {
         .derive_eq(true)
         .derive_hash(true)
         .derive_debug(true)
-        // Bypasses an issue with bindgen that makes it generate invalid Rust code.
+        // Bypasses an issue with bindgen (https://github.com/rust-lang/rust-bindgen/issues/1738) that makes it generate invalid Rust code.
         .blocklist_item("^(std::.*)$")
         .formatter(bindgen::Formatter::Prettyplease)
         .generate()
