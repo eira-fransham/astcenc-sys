@@ -30,6 +30,9 @@ fn main() {
         "astc-encoder/Source/astcenc_weight_quant_xfer_tables.cpp",
     ]);
 
+    build.cpp(true);
+    build.std("c++14");
+
     build.compile("astcenc-vendored");
 
     let main_header = "wrapper.h";
@@ -43,6 +46,8 @@ fn main() {
         .derive_eq(true)
         .derive_hash(true)
         .derive_debug(true)
+        // Bypasses an issue with bindgen (https://github.com/rust-lang/rust-bindgen/issues/1738) that makes it generate invalid Rust code.
+        .blocklist_item("^(std::.*)$")
         .formatter(bindgen::Formatter::Prettyplease)
         .generate()
         .expect("Unable to generate bindings");
